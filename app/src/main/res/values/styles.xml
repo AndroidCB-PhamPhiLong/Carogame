@@ -1,0 +1,12 @@
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.Carogame" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Các thuộc tính theme của bạn -->
+    </style>
+
+    <!-- Thêm theme không có ActionBar -->
+    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

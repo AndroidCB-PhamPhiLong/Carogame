@@ -1,0 +1,107 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Trạng thái -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lượt đi: X"
+        android:textSize="18sp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <!-- Tổng thời gian -->
+    <TextView
+        android:id="@+id/tvTotalTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thời gian: 00:00"
+        android:layout_below="@id/tvStatus"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="8dp"
+        android:textSize="14sp" />
+
+    <!-- Thời gian lượt -->
+    <TextView
+        android:id="@+id/tvTurnTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lượt còn: 10s"
+        android:layout_below="@id/tvStatus"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
+        android:textSize="14sp" />
+
+    <!-- Bàn cờ -->
+    <btl.phamphilong.carogame.BoardView
+        android:id="@+id/boardView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/tvTurnTime"
+        android:layout_above="@id/btnReset"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Nút Main Menu -->
+    <Button
+        android:id="@+id/btnReset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/main_menu"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/playerXIcon"
+        android:backgroundTint="#FF9800"
+        android:textColor="@android:color/white"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Icon X -->
+    <ImageView
+        android:id="@+id/playerXIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_x"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Tên người chơi X -->
+    <TextView
+        android:id="@+id/playerXName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tên X"
+        android:textSize="14sp"
+        android:layout_below="@id/playerXIcon"
+        android:layout_alignStart="@id/playerXIcon"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Icon O -->
+    <ImageView
+        android:id="@+id/playerOIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/ic_o"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Tên người chơi O -->
+    <TextView
+        android:id="@+id/playerOName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tên O"
+        android:textSize="14sp"
+        android:layout_below="@id/playerOIcon"
+        android:layout_alignEnd="@id/playerOIcon"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp" />
+</RelativeLayout>

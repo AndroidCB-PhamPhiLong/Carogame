@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Carogame</string>
+    <string name="reset_game">Reset Game</string>
+    <string name="player_x_hint">Nhập tên người chơi X</string>
+    <string name="player_o_hint">Nhập tên người chơi O</string>
+    <string name="default_player_x">Player X</string>
+    <string name="default_player_o">Player O</string>
+    <string name="computer_name">Computer</string>
+    <string name="main_menu">Main Menu</string>
+    <string-array name="board_sizes">
+        <item>3x3</item>
+        <item>5x5</item>
+        <item>10x10</item>
+        <item>15x15</item>
+    </string-array>
+    <string-array name="match_modes">
+        <item>3 trận (thắng 2)</item>
+        <item>5 trận (thắng 3)</item>
+        <item>7 trận (thắng 4)</item>
+    </string-array>
+</resources>
