@@ -1,198 +1,220 @@
 package btl.phamphilong.carogame;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.view.MotionEvent;
 import android.widget.Button;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
+    private static final int REQUEST_CODE_SETTINGS = 1;
+    private static final long TURN_DURATION_MS = 10_000;
+
     private BoardView boardView;
-    private TextView tvStatus;
-    private Button btnReset;
     private GameState gameState;
-    private static final int REQUEST_CODE_RESULT = 1;
+    private TextView textCurrentPlayer, tvTotalTime, tvTurnTime;
+    private Button btnMainMenu, btnSettings;
 
-    private String playerXName = "Player X";
-    private String playerOName = "Player O";
+    private int boardSize = 5;
+    private String playerXName = "X", playerOName = "O";
 
-    private TextView tvTotalTime, tvTurnTime;
+    private boolean isMusicEnabled = true;
+
     private Handler totalTimeHandler = new Handler();
-    private Runnable totalTimeRunnable;
-    private long totalStartTime;
+    private int totalSeconds = 0;
 
     private CountDownTimer turnTimer;
-    private final int TURN_TIME_LIMIT = 10; // giây
-    private boolean isPlayerXTurn = true;
+
+    private final Runnable updateTotalTimeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            totalSeconds++;
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            tvTotalTime.setText(String.format("Thời gian: %02d:%02d", minutes, seconds));
+            totalTimeHandler.postDelayed(this, 1000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initViews();
+        getDataFromIntent();
+        loadMusicPreference();
+        setupBackgroundMusic();
+        setupGame(boardSize);
+
+        setupGameCallbacks();
+        setupButtonEvents();
+    }
+
+    private void initViews() {
         boardView = findViewById(R.id.boardView);
-        tvStatus = findViewById(R.id.tvStatus);
-        btnReset = findViewById(R.id.btnReset);
+        textCurrentPlayer = findViewById(R.id.textCurrentPlayer);
         tvTotalTime = findViewById(R.id.tvTotalTime);
         tvTurnTime = findViewById(R.id.tvTurnTime);
+        btnMainMenu = findViewById(R.id.btnMainMenu);
+        btnSettings = findViewById(R.id.btnSettings);
+    }
 
-        TextView tvPlayerX = findViewById(R.id.playerXName);
-        TextView tvPlayerO = findViewById(R.id.playerOName);
-
-        // Lấy kích thước bàn cờ từ SharedPreferences
-        SharedPreferences sharedPreferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
-        int boardSize = sharedPreferences.getInt("board_size", 0);  // Mặc định là 0 (3x3)
-
-        // Chuyển đổi vị trí Spinner thành kích thước bàn cờ
-        int size = 3;  // Kích thước mặc định là 3x3
-        if (boardSize == 1) size = 5;
-        else if (boardSize == 2) size = 10;
-        else if (boardSize == 3) size = 15;
-
-        // Cập nhật kích thước bàn cờ
-        gameState = new GameState(size);
-        boardView.setGameState(gameState);
-        boardView.invalidate();
-
-
+    private void getDataFromIntent() {
         Intent intent = getIntent();
-        if (intent != null) {
-            String nameX = intent.getStringExtra("player_x");
-            String nameO = intent.getStringExtra("player_o");
+        playerXName = intent.getStringExtra("player_x");
+        playerOName = intent.getStringExtra("player_o");
+        boardSize = intent.getIntExtra("BOARD_SIZE", 5);
 
-            if (nameX != null) playerXName = nameX;
-            if (nameO != null) playerOName = nameO;
+        if (playerXName == null || playerXName.trim().isEmpty()) playerXName = "X";
+        if (playerOName == null || playerOName.trim().isEmpty()) playerOName = "O";
+    }
 
-            tvPlayerX.setText(playerXName);
-            tvPlayerO.setText(playerOName);
+    private void loadMusicPreference() {
+        SharedPreferences preferences = getSharedPreferences("settings", MODE_PRIVATE);
+        isMusicEnabled = preferences.getBoolean("musicEnabled", true);
+    }
+
+    private void setupBackgroundMusic() {
+        if (isMusicEnabled) {
+            MusicManager.startBackgroundMusic(this);
+        } else {
+            MusicManager.stopMusic();
         }
+    }
 
-        gameState = new GameState(15);
+    private void setupGame(int size) {
+        gameState = new GameState(size, playerXName, playerOName);
         boardView.setGameState(gameState);
-        boardView.setOnGameOverListener(this::showResultDialog);
+        updateCurrentPlayerUI();
 
-        btnReset.setOnClickListener(v -> {
-            Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
-            menuIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(menuIntent);
-            finish();
+        totalSeconds = 0;
+        tvTotalTime.setText("Thời gian: 00:00");
+        tvTurnTime.setText("Lượt còn: 10s");
+
+        totalTimeHandler.postDelayed(updateTotalTimeRunnable, 1000);
+        startTurnTimer();
+    }
+
+    private void setupGameCallbacks() {
+        boardView.setOnMoveListener(() -> {
+            updateCurrentPlayerUI();
+            restartTurnTimer();
         });
 
-        updateStatus();
-        startTotalTimeCounter();
-        startTurnTimer();
-        setupTouchListener();
+        boardView.setOnGameOverListener(winner -> {
+            stopAllTimers();
+            showGameResult(winner);
+        });
     }
 
-    private void updateStatus() {
-        String currentPlayer = gameState.getCurrentPlayer() == Player.X ? playerXName : playerOName;
-        tvStatus.setText("Lượt đi: " + currentPlayer);
+    private void setupButtonEvents() {
+        btnMainMenu.setOnClickListener(v -> {
+            stopAllTimers();
+            navigateToMenu();
+        });
+
+        btnSettings.setOnClickListener(v -> {
+            stopAllTimers();
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivityForResult(settingsIntent, REQUEST_CODE_SETTINGS);
+        });
     }
 
-    private void startTotalTimeCounter() {
-        totalStartTime = System.currentTimeMillis();
-        totalTimeRunnable = new Runnable() {
-            @Override
-            public void run() {
-                long elapsed = (System.currentTimeMillis() - totalStartTime) / 1000;
-                long minutes = elapsed / 60;
-                long seconds = elapsed % 60;
-                tvTotalTime.setText(String.format("Thời gian: %02d:%02d", minutes, seconds));
-                totalTimeHandler.postDelayed(this, 1000);
-            }
-        };
-        totalTimeHandler.post(totalTimeRunnable);
+    private void updateCurrentPlayerUI() {
+        Player currentPlayer = gameState.getCurrentPlayer();
+        String name = (currentPlayer == Player.X) ? playerXName : playerOName;
+        textCurrentPlayer.setText("Lượt: " + name);
     }
 
     private void startTurnTimer() {
-        if (turnTimer != null) turnTimer.cancel();
-
-        turnTimer = new CountDownTimer(TURN_TIME_LIMIT * 1000, 1000) {
+        turnTimer = new CountDownTimer(TURN_DURATION_MS, 1000) {
+            @Override
             public void onTick(long millisUntilFinished) {
                 tvTurnTime.setText("Lượt còn: " + millisUntilFinished / 1000 + "s");
             }
 
+            @Override
             public void onFinish() {
-                tvTurnTime.setText("Hết lượt!");
-                switchTurn(); // Chuyển lượt
-                startTurnTimer(); // Bắt đầu đếm cho người tiếp theo
+                gameState.switchPlayer();
+                updateCurrentPlayerUI();
+                boardView.invalidate();
+                restartTurnTimer();
             }
-        }.start();
+        };
+        turnTimer.start();
     }
 
-    private void switchTurn() {
-        isPlayerXTurn = !isPlayerXTurn;
-        Player nextPlayer = isPlayerXTurn ? Player.X : Player.O;
-        gameState.setCurrentPlayer(nextPlayer);
-        updateStatus();
-        boardView.invalidate();
+    private void restartTurnTimer() {
+        if (turnTimer != null) turnTimer.cancel();
+        startTurnTimer();
     }
 
-    private void setupTouchListener() {
-        boardView.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN && !gameState.isGameOver()) {
-                int col = (int) (event.getX() / boardView.getCellSize());
-                int row = (int) (event.getY() / boardView.getCellSize());
-
-                if (row >= 0 && row < gameState.getBoardSize()
-                        && col >= 0 && col < gameState.getBoardSize()) {
-
-                    if (gameState.getBoard()[row][col] == Player.EMPTY) {
-                        Player current = gameState.getCurrentPlayer();
-                        if ((isPlayerXTurn && current == Player.X) || (!isPlayerXTurn && current == Player.O)) {
-                            boolean moved = gameState.makeMove(row, col);
-                            if (moved) {
-                                boardView.invalidate();
-                                if (gameState.isGameOver()) {
-                                    showResultDialog(current);
-                                } else {
-                                    switchTurn();       // Chuyển lượt ngay sau khi đánh
-                                    startTurnTimer();   // Bắt đầu đếm giờ cho lượt tiếp theo
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return true;
-        });
+    private void stopAllTimers() {
+        if (turnTimer != null) turnTimer.cancel();
+        totalTimeHandler.removeCallbacks(updateTotalTimeRunnable);
     }
 
-    private void showResultDialog(Player winner) {
+    private void showGameResult(Player winner) {
+            MusicManager.stopMusic();
+
         String result, message;
         if (winner == Player.EMPTY) {
-            result = "HÒA!";
-            message = "Hai bên ngang tài ngang sức";
+            result = "Hòa!";
+            message = "Không ai chiến thắng.";
         } else {
-            result = (winner == Player.X ? "X THẮNG!" : "O THẮNG!");
             String winnerName = (winner == Player.X) ? playerXName : playerOName;
-            message = "Chúc mừng người chơi " + winnerName + "!";
+            result = "Chiến thắng!";
+            message = winnerName + " đã giành chiến thắng!";
         }
 
-        Intent intent = new Intent(this, ResultActivity.class);
-        intent.putExtra("RESULT", result);
-        intent.putExtra("MESSAGE", message);
-        startActivityForResult(intent, REQUEST_CODE_RESULT);
+        int winnerMoves = (winner != Player.EMPTY) ? gameState.getMoveCountForPlayer(winner) : 0;
+
+        Intent resultIntent = new Intent(MainActivity.this, ResultActivity.class);
+        resultIntent.putExtra("RESULT", result);
+        resultIntent.putExtra("MESSAGE", message);
+        resultIntent.putExtra("SOUND_ENABLED", isMusicEnabled);
+        resultIntent.putExtra("WINNER_MOVES", winnerMoves);
+        resultIntent.putExtra("BOARD_SIZE", boardSize); // THÊM DÒNG NÀY
+        resultIntent.putExtra("TOTAL_TIME", totalSeconds);
+        startActivity(resultIntent);
+    }
+
+    private void navigateToMenu() {
+        Intent menuIntent = new Intent(MainActivity.this, MenuActivity.class);
+        menuIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(menuIntent);
+        finish();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MusicManager.resumeMusic(this);
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MusicManager.stopMusic();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_RESULT && resultCode == RESULT_OK) {
-            resetGame();
+        if (requestCode == REQUEST_CODE_SETTINGS && resultCode == RESULT_OK && data != null) {
+            int newBoardSize = data.getIntExtra("boardSize", boardSize);
+            if (newBoardSize != boardSize) {
+                boardSize = newBoardSize;
+                setupGame(boardSize); // Thiết lập lại bàn cờ với kích thước mới
+            }
         }
     }
 
-    private void resetGame() {
-        gameState = new GameState(15);
-        boardView.setGameState(gameState);
-        boardView.invalidate();
-        isPlayerXTurn = true;
-        updateStatus();
-        startTurnTimer();
-    }
+
 }

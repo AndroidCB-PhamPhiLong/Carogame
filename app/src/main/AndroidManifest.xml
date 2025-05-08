@@ -5,34 +5,23 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="Caro Game"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Carogame">
 
-        <!-- Main Activity -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="Caro Game"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity android:name=".ResultActivity" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".HistoryActivity" />
+        <activity android:name=".MenuActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Menu Activity -->
-        <activity
-            android:name=".MenuActivity"
-            android:label="Menu"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        </activity>
-
-        <!-- Result Activity -->
-        <activity
-            android:name=".ResultActivity"
-            android:label="Kết Quả"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        </activity>
-
     </application>
+
 </manifest>

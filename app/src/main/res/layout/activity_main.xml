@@ -5,10 +5,10 @@
 
     <!-- Trạng thái -->
     <TextView
-        android:id="@+id/tvStatus"
+        android:id="@+id/textCurrentPlayer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lượt đi: X"
+        android:text="Lượt: X"
         android:textSize="18sp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Thời gian: 00:00"
-        android:layout_below="@id/tvStatus"
+        android:layout_below="@id/textCurrentPlayer"
         android:layout_alignParentStart="true"
         android:layout_marginTop="8dp"
         android:textSize="14sp" />
@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Lượt còn: 10s"
-        android:layout_below="@id/tvStatus"
+        android:layout_below="@id/textCurrentPlayer"
         android:layout_alignParentEnd="true"
         android:layout_marginTop="8dp"
         android:textSize="14sp" />
@@ -41,23 +41,33 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_below="@id/tvTurnTime"
-        android:layout_above="@id/btnReset"
+        android:layout_above="@+id/btnMainMenu"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp" />
 
     <!-- Nút Main Menu -->
     <Button
-        android:id="@+id/btnReset"
+        android:id="@+id/btnMainMenu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/main_menu"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@id/playerXIcon"
-        android:backgroundTint="#FF9800"
+        android:text="Menu chính"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:backgroundTint="#F44336"
         android:textColor="@android:color/white"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_margin="8dp" />
+
+    <!-- Nút Settings -->
+    <Button
+        android:id="@+id/btnSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cài đặt"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:backgroundTint="#2196F3"
+        android:textColor="@android:color/white"
+        android:layout_margin="8dp" />
 
     <!-- Icon X -->
     <ImageView
@@ -65,10 +75,10 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/ic_x"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@id/btnMainMenu"
         android:layout_alignParentStart="true"
         android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="4dp" />
 
     <!-- Tên người chơi X -->
     <TextView
@@ -88,10 +98,10 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:src="@drawable/ic_o"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@id/btnSettings"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="4dp" />
 
     <!-- Tên người chơi O -->
     <TextView

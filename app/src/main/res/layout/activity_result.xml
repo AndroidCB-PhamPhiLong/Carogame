@@ -1,54 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#CC000000"
     android:padding="20dp">
 
     <LinearLayout
-        android:layout_width="300dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:layout_margin="30dp"
         android:background="@drawable/bg_rounded"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="24dp"
+        android:gravity="center_horizontal">
 
+        <!-- Kết quả -->
         <TextView
             android:id="@+id/tvResult"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Kết quả"
             android:textColor="#000000"
-            android:textSize="24sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
 
+        <!-- Thông điệp chiến thắng hoặc hòa -->
         <TextView
             android:id="@+id/tvMessage"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:gravity="center"
-            android:text=""
+            android:text="Chi tiết"
             android:textColor="#000000"
             android:textSize="18sp" />
 
+        <!-- TextView hiển thị số nước đi -->
+        <TextView
+            android:id="@+id/tvWinnerMoves"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Số nước đi: "
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:gravity="center" />
+
+        <!-- TextView hiển thị tổng thời gian -->
+        <TextView
+            android:id="@+id/tvTotalTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Tổng thời gian: "
+            android:textColor="#000000"
+            android:textSize="16sp"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/tvBoardSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kích thước bàn cờ:"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"
+            />
+
+        <!-- Nút lưu lịch sử -->
+        <Button
+            android:id="@+id/btnSaveHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#FF9800"
+            android:text="Lưu lịch sử"
+            android:textColor="#FFFFFF" />
+
+        <!-- Nút chơi lại -->
         <Button
             android:id="@+id/btnPlayAgain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="12dp"
             android:backgroundTint="#4CAF50"
             android:text="Chơi lại"
             android:textColor="#FFFFFF" />
 
+        <!-- Nút về menu -->
         <Button
             android:id="@+id/btnBackToMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="12dp"
             android:backgroundTint="#2196F3"
             android:text="Về menu"
             android:textColor="#FFFFFF" />
+
     </LinearLayout>
 </RelativeLayout>

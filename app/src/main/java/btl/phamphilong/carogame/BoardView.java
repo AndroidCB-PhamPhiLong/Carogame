@@ -15,6 +15,8 @@ public class BoardView extends View {
     private int cellSize;
     private OnGameOverListener gameOverListener;
     private OnMoveListener onMoveListener;
+    private int moveCountX = 0;
+    private int moveCountO = 0;
 
     public interface OnGameOverListener {
         void onGameOver(Player winner);
@@ -43,7 +45,18 @@ public class BoardView extends View {
 
     public void setGameState(GameState gameState) {
         this.gameState = gameState;
-        invalidate();
+        this.moveCountX = 0;
+        this.moveCountO = 0;
+        invalidate(); // Vẽ lại bàn cờ
+        requestLayout(); // Bắt buộc layout lại nếu cần
+    }
+
+    public int getMoveCountX() {
+        return moveCountX;
+    }
+
+    public int getMoveCountO() {
+        return moveCountO;
     }
 
     public int getCellSize() {
@@ -69,19 +82,16 @@ public class BoardView extends View {
         int height = getHeight();
         cellSize = Math.min(width, height) / boardSize;
 
-        // Vẽ nền bàn cờ với màu sắc xen kẽ (đỏ và xanh dương)
+        // Vẽ nền bàn cờ xen kẽ đỏ và xanh dương
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                if ((i + j) % 2 == 0) {
-                    paint.setColor(Color.RED);
-                } else {
-                    paint.setColor(Color.BLUE);
-                }
-                canvas.drawRect(j * cellSize, i * cellSize, (j + 1) * cellSize, (i + 1) * cellSize, paint);
+                paint.setColor((i + j) % 2 == 0 ? Color.RED : Color.BLUE);
+                canvas.drawRect(j * cellSize, i * cellSize,
+                        (j + 1) * cellSize, (i + 1) * cellSize, paint);
             }
         }
 
-        // Vẽ đường lưới
+        // Vẽ lưới
         paint.setColor(Color.BLACK);
         paint.setStyle(Paint.Style.STROKE);
         for (int i = 0; i <= boardSize; i++) {
@@ -98,6 +108,11 @@ public class BoardView extends View {
                 }
             }
         }
+
+        // ✅ Hiển thị số bước đi của từng người chơi
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(50);
+        canvas.drawText("X: " + moveCountX + "  |  O: " + moveCountO, getWidth() / 2f, getHeight() - 30, textPaint);
     }
 
     private void drawPlayer(Canvas canvas, int row, int col, Player player) {
@@ -132,10 +147,18 @@ public class BoardView extends View {
                 col >= 0 && col < gameState.getBoardSize()) {
 
             if (gameState.makeMove(row, col)) {
+                // ✅ Tăng số bước theo người chơi
+                Player currentPlayer = gameState.getCurrentPlayer() == Player.X ? Player.O : Player.X;
+                if (currentPlayer == Player.X) {
+                    moveCountX++;
+                } else if (currentPlayer == Player.O) {
+                    moveCountO++;
+                }
+
                 invalidate();
 
                 if (onMoveListener != null) {
-                    onMoveListener.onMoveMade();  // callback khi đi xong nước
+                    onMoveListener.onMoveMade();
                 }
 
                 if (gameState.isGameOver()) {

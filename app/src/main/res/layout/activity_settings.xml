@@ -26,6 +26,18 @@
         android:layout_marginBottom="16dp"
         tools:ignore="TouchTargetSizeCheck" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nhạc nền:" />
+
+    <Switch
+        android:id="@+id/switchMusic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        tools:ignore="TouchTargetSizeCheck" />
+
     <Button
         android:id="@+id/btnSaveSettings"
         android:layout_width="match_parent"

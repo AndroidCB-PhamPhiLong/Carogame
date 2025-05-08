@@ -1,69 +1,107 @@
 package btl.phamphilong.carogame;
 
+
+import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import androidx.appcompat.app.AppCompatActivity;
+import android.widget.Switch;
 
-public class SettingsActivity extends AppCompatActivity {
-
+public class SettingsActivity extends Activity {
     private Spinner spinnerBoardSize;
-    private Button btnSaveSettings;
-    private SharedPreferences sharedPreferences;
+    private Switch musicSwitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        // Ánh xạ view
         spinnerBoardSize = findViewById(R.id.spinnerBoardSize);
-        btnSaveSettings = findViewById(R.id.btnSaveSettings);
+        musicSwitch = findViewById(R.id.switchMusic);
+        Button btnSaveSettings = findViewById(R.id.btnSaveSettings);
 
-        // Khởi tạo SharedPreferences để lưu cài đặt
-        sharedPreferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
-
-        // Thiết lập Adapter cho Spinner
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.board_sizes, android.R.layout.simple_spinner_item);
+        // Thiết lập danh sách kích thước bàn cờ
+        String[] boardSizes = {"5x5", "10x10", "15x15"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, boardSizes);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerBoardSize.setAdapter(adapter);
 
-        // Tải cài đặt hiện tại từ SharedPreferences
-        loadBoardSizeSetting();
+        // Đọc cài đặt hiện tại
+        SharedPreferences preferences = getSharedPreferences("settings", MODE_PRIVATE);
+        boolean isMusicEnabled = preferences.getBoolean("musicEnabled", true);
+        int currentBoardSize = preferences.getInt("boardSize", 5);
 
-        // Thiết lập sự kiện khi người dùng chọn kích thước bàn cờ
-        spinnerBoardSize.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                // Lưu cài đặt khi người dùng chọn kích thước bàn cờ
-                saveBoardSizeSetting(position);
-            }
+        // Gán giá trị đã lưu
+        musicSwitch.setChecked(isMusicEnabled);
+        if (currentBoardSize == 10) {
+            spinnerBoardSize.setSelection(1);
+        } else if (currentBoardSize == 15) {
+            spinnerBoardSize.setSelection(2);
+        } else {
+            spinnerBoardSize.setSelection(0);
+        }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-                // Không làm gì khi không chọn gì
+        musicSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Lưu trạng thái nhạc vào SharedPreferences
+            SharedPreferences.Editor editor = getSharedPreferences("settings", MODE_PRIVATE).edit();
+            editor.putBoolean("musicEnabled", isChecked);
+            editor.apply();
+
+            // Bật hoặc tắt nhạc tương ứng
+            if (isChecked) {
+                MusicManager.startBackgroundMusic(SettingsActivity.this);
+            } else {
+                MusicManager.stopMusic();
+                ResultActivity.stopMusicCompletely(); // Nếu win_sound đang phát, dừng luôn
             }
         });
 
-        // Thiết lập sự kiện cho nút "Lưu cài đặt"
-        btnSaveSettings.setOnClickListener(v -> finish());
+
+        // Sự kiện nút lưu
+        btnSaveSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String selected = (String) spinnerBoardSize.getSelectedItem();
+                int size = selected.equals("10x10") ? 10 : selected.equals("15x15") ? 15 : 5;
+
+                boolean musicOn = musicSwitch.isChecked();
+                SharedPreferences.Editor editor = getSharedPreferences("settings", MODE_PRIVATE).edit();
+                editor.putInt("boardSize", size);               // ✅ Lưu kích thước bàn cờ
+                editor.putBoolean("musicEnabled", musicOn);     // ✅ Lưu trạng thái nhạc
+                editor.apply();
+
+                // Nếu tắt nhạc thì yêu cầu các activity khác dừng nhạc
+                if (!musicOn) {
+                    // Gọi hàm tĩnh dừng nhạc ở các activity có phát nhạc nền
+                    ResultActivity.stopMusicCompletely();
+                }
+
+                // Trả về kết quả cho activity gọi
+                Intent intent = new Intent();
+                intent.putExtra("boardSize", size);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        });
+
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MusicManager.resumeMusic(this);
     }
 
-    // Lưu kích thước bàn cờ vào SharedPreferences
-    private void saveBoardSizeSetting(int position) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("board_size", position);  // Lưu chỉ số của lựa chọn
-        editor.apply();
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MusicManager.stopMusic();
     }
 
-    // Tải cài đặt kích thước bàn cờ từ SharedPreferences
-    private void loadBoardSizeSetting() {
-        int savedPosition = sharedPreferences.getInt("board_size", 0);  // Lấy giá trị mặc định là 0 (3x3)
-        spinnerBoardSize.setSelection(savedPosition);  // Chọn giá trị tương ứng trong Spinner
-    }
+
 }
